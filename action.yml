@@ -16,12 +16,14 @@ inputs:
   region:
     description: home region (e.g., us-phoenix-1)
     required: true
-
 runs:
   using: composite
   steps:
-    - name: Install and configure OCI CLI
+    - name: Install uv
       uses: astral-sh/setup-uv@v5
+      shell: bash
+
+    - name: Install and configure OCI CLI
       shell: bash
       run: |
         # Install oci-cli using uv
@@ -30,7 +32,7 @@ runs:
         # Create OCI config directory
         mkdir -p "${HOME}/.oci"
 
-        # Write API key securely
+        # Write API key
         echo "${{ inputs.api-key }}" > "${HOME}/.oci/api_key.pem"
         chmod 600 "${HOME}/.oci/api_key.pem"
 
@@ -49,4 +51,4 @@ runs:
         oci setup repair-file-permissions --file "${HOME}/.oci/config" &>/dev/null
 
         # Test the credentials
-        echo "IAM User: $(oci iam user get --user-id ${{ inputs.user }} --query 'data.name' | jq -r .)"
+        echo "IAM User: $(oci iam user get --user-id ${{ inputs.user }} --query 'data.name')"
