@@ -21,7 +21,6 @@ runs:
   steps:
     - name: Install uv
       uses: astral-sh/setup-uv@v5
-      shell: bash
 
     - name: Install and configure OCI CLI
       shell: bash
