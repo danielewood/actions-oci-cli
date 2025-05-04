@@ -32,8 +32,10 @@ runs:
         mkdir -p "${HOME}/.oci"
 
         # Write API key
-        echo "${{ inputs.api-key }}" > "${HOME}/.oci/api_key.pem"
-        chmod 600 "${HOME}/.oci/api_key.pem"
+        cat << EOF > "${HOME}/.oci/api_key.pem"
+        ${{ inputs.api-key }}
+        OCI_API_KEY
+        EOF
 
         # Write OCI configuration
         cat << EOF > "${HOME}/.oci/config"
