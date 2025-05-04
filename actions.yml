@@ -1,0 +1,52 @@
+name: Setup OCI CLI
+description: Installs and configures the Oracle Cloud Infrastructure (OCI) CLI with provided credentials
+inputs:
+  user:
+    description: user OCID
+    required: true
+  fingerprint:
+    description: api key fingerprint
+    required: true
+  api-key:
+    description: api key (pem format)
+    required: true
+  tenancy:
+    description: tenancy OCID
+    required: true
+  region:
+    description: home region (e.g., us-phoenix-1)
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Install and configure OCI CLI
+      uses: astral-sh/setup-uv@v5
+      shell: bash
+      run: |
+        # Install oci-cli using uv
+        uv tool install oci-cli --quiet
+
+        # Create OCI config directory
+        mkdir -p "${HOME}/.oci"
+
+        # Write API key securely
+        echo "${{ inputs.api-key }}" > "${HOME}/.oci/api_key.pem"
+        chmod 600 "${HOME}/.oci/api_key.pem"
+
+        # Write OCI configuration
+        cat << EOF > "${HOME}/.oci/config"
+        [DEFAULT]
+        user=${{ inputs.user }}
+        fingerprint=${{ inputs.fingerprint }}
+        key_file=${HOME}/.oci/api_key.pem
+        tenancy=${{ inputs.tenancy }}
+        region=${{ inputs.region }}
+        EOF
+
+        # Repair file permissions
+        oci setup repair-file-permissions --file "${HOME}/.oci/api_key.pem" &>/dev/null
+        oci setup repair-file-permissions --file "${HOME}/.oci/config" &>/dev/null
+
+        # Test the credentials
+        echo "IAM User: $(oci iam user get --user-id ${{ inputs.user }} --query 'data.name' | jq -r .)"
