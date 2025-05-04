@@ -16,11 +16,20 @@ inputs:
   region:
     description: home region (e.g., us-phoenix-1)
     required: true
+  github-token:
+    description:
+      "Used to increase the rate limit when retrieving versions and downloading uv."
+    required: false
+    default: ${{ github.token }}
 runs:
   using: composite
   steps:
     - name: Install uv
-      uses: astral-sh/setup-uv@v5
+      uses: astral-sh/setup-uv@v6
+      with:
+        enable-cache: true
+        ignore-nothing-to-cache: true
+        github-token: ${{ inputs.github-token }}
 
     - name: Install and configure OCI CLI
       shell: bash
